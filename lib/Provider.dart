@@ -11,7 +11,7 @@ class SensorDataProvider with ChangeNotifier {
   String apiURL =
       'http://192.168.1.19:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
   String JWT =
-      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDQ4ODUyMiwiZXhwIjoxNjgwNDk3NTIyLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.bsstmyiituCJvMuUNthdRRS7gpXXRvddFE4ePbzLxYHxQ-bijgZbxv4nd7rQDpa9g7kniN2vAyAphEgBFTRjnw';
+      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDUzNDA0MywiZXhwIjoxNjgwNTQzMDQzLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.PoWGVjfUFPSVJp6KLQYzo4GhA4b5W96sXVO-jgTJKiEnOejId4cpLYCAqx2TNPQdp4qkP0edyLDDxG3G_xZ96g';
 
   double get temperature => _temperature;
   double get vibration => _vibration;
@@ -20,10 +20,11 @@ class SensorDataProvider with ChangeNotifier {
   List<double> temperatureData = [];
   List<double> currentData = [];
   List<double> vibrationData = [];
-  int maxDataLength = 20;
+  int maxDataLength = 50;
+  Timer? sensorTimer;
 
   Future<void> _getSensorlistData() async {
-    Timer.periodic(Duration(seconds: 5), (Timer t) async {
+    sensorTimer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
       var response =
           await http.get(Uri.parse(apiURL), headers: {'Authorization': JWT});
       var data = json.decode(response.body);
@@ -49,7 +50,7 @@ class SensorDataProvider with ChangeNotifier {
   }
 
   Future<void> _getSensorData() async {
-    Timer.periodic(Duration(seconds: 5), (Timer t) async {
+    sensorTimer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
       var response =
           await http.get(Uri.parse(apiURL), headers: {'Authorization': JWT});
       var data = json.decode(response.body);

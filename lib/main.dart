@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:predictive_maintenance_app/check_login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:provider/provider.dart';
-import 'Provider.dart';
+// import 'package:provider/provider.dart';
+// import 'Provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,14 +18,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => SensorDataProvider()),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: CheckLogin(),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: CheckLogin(),
     );
   }
 }

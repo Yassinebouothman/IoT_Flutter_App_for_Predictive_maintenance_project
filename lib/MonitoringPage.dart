@@ -1,14 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-//import 'dart:async';
+import 'dart:async';
 import 'PredictionPage.dart';
 import 'SupportPage.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'ChartsPage.dart';
 import 'SettingsPage.dart';
-import 'Provider.dart';
-import 'package:provider/provider.dart';
+// import 'Provider.dart';
+// import 'package:provider/provider.dart';
 
 class MonitoringPage extends StatefulWidget {
   MonitoringPage({Key? key}) : super(key: key);
@@ -22,7 +22,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
   void signUserOut() async {
     FirebaseAuth.instance.signOut();
   }
-/*
+
   double temperature = 0.0;
   double vibration = 0.0;
   double current = 0.0;
@@ -30,15 +30,9 @@ class _MonitoringPageState extends State<MonitoringPage> {
   String apiURL =
       'http://192.168.1.19:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
   String JWT =
-      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDMwNjE3MSwiZXhwIjoxNjgwMzE1MTcxLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.aR4Wrp-OYDAgUkvbC8dphb-HFoWteHjoZyyNmWHSgl-aB4xWdkU6vzYTipMQn_ADbjQ6hCvhsXYkLapWRU8NSQ';
+      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDUzNDA0MywiZXhwIjoxNjgwNTQzMDQzLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.PoWGVjfUFPSVJp6KLQYzo4GhA4b5W96sXVO-jgTJKiEnOejId4cpLYCAqx2TNPQdp4qkP0edyLDDxG3G_xZ96g';
 
   Future<void> _getSensorData() async {
-    // Make an HTTP GET request to the API
-    // var response = await http.get(Uri.parse(apiURL), headers: {
-    //   'Authorization':
-    //       'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDMwNjE3MSwiZXhwIjoxNjgwMzE1MTcxLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.aR4Wrp-OYDAgUkvbC8dphb-HFoWteHjoZyyNmWHSgl-aB4xWdkU6vzYTipMQn_ADbjQ6hCvhsXYkLapWRU8NSQ'
-    // });
-
     // Parse the response JSON to extract the sensor values
     Timer.periodic(Duration(seconds: 5), (Timer t) async {
       var response =
@@ -47,11 +41,13 @@ class _MonitoringPageState extends State<MonitoringPage> {
       var temperatureData = data['Temperature'][0];
       var vibrationData = data['Vibration'][0];
       var currentData = data['Current'][0];
-      setState(() {
-        temperature = double.parse(temperatureData['value']);
-        vibration = double.parse(vibrationData['value']);
-        current = double.parse(currentData['value']);
-      });
+      if (mounted) {
+        setState(() {
+          temperature = double.parse(temperatureData['value']);
+          vibration = double.parse(vibrationData['value']);
+          current = double.parse(currentData['value']);
+        });
+      }
     });
 
     // Update the state with the new sensor values
@@ -62,20 +58,21 @@ class _MonitoringPageState extends State<MonitoringPage> {
     super.initState();
     _getSensorData(); // Call the API when the widget is first created
   }
-*/
 
   @override
   Widget build(BuildContext context) {
-    final sensorDataProvider =
-        Provider.of<SensorDataProvider>(context, listen: true);
+    //provider code
+//     final sensorDataProvider =
+//         Provider.of<SensorDataProvider>(context, listen: true);
 
-// Access the sensor data
-    double temperature = sensorDataProvider.temperature;
-    double vibration = sensorDataProvider.vibration;
-    double current = sensorDataProvider.current;
+// // Access the sensor data
+//     double temperature = sensorDataProvider.temperature;
+//     double vibration = sensorDataProvider.vibration;
+//     double current = sensorDataProvider.current;
 
-// Start fetching data
-    sensorDataProvider.startFetchingData();
+// // Start fetching data
+//     sensorDataProvider.startFetchingData();
+
     return Scaffold(
       backgroundColor: Colors.grey[300],
       appBar: AppBar(
@@ -242,6 +239,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                 Icon(
                   Icons.vibration_outlined,
                   size: 64,
+                  color: Colors.green,
                 ),
                 SizedBox(
                   width: 16.0,
@@ -263,7 +261,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     ),
                     Center(
                       child: Text(
-                        '${vibration.toStringAsFixed(1)}Hz',
+                        '${vibration.toStringAsFixed(1)}',
                         style: TextStyle(
                           fontSize: 24,
                         ),
