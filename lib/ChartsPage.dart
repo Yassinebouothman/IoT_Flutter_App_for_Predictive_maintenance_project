@@ -7,6 +7,9 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+//import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+
 // import 'Provider.dart';
 // import 'package:provider/provider.dart';
 
@@ -26,11 +29,13 @@ class _ChartsPageState extends State<ChartsPage> {
   String apiURL =
       'http://192.168.1.19:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
   String JWT =
-      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDUzNDA0MywiZXhwIjoxNjgwNTQzMDQzLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.PoWGVjfUFPSVJp6KLQYzo4GhA4b5W96sXVO-jgTJKiEnOejId4cpLYCAqx2TNPQdp4qkP0edyLDDxG3G_xZ96g';
-
+      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDU2MjM3OCwiZXhwIjoxNjgwNTcxMzc4LCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.eTqBgBW5HAy5tH_LR3-TyrXQRtPCVfLuHggSz9jDNcHlugnw4ekmWvMx75pB5psaPuEJZroK4K0AnRreRtnuXw';
   List<double> temperatureData = [];
   List<double> currentData = [];
   List<double> vibrationData = [];
+  List<DateTime> temperaturetimestampData = [];
+  List<DateTime> vibrationtimestampData = [];
+  List<DateTime> currenttimestampData = [];
   int maxDataLength = 50;
 
   Future<void> _getSensorlistData() async {
@@ -38,23 +43,53 @@ class _ChartsPageState extends State<ChartsPage> {
       var response =
           await http.get(Uri.parse(apiURL), headers: {'Authorization': JWT});
       var data = json.decode(response.body);
-      var temperatureValue = double.parse(data['Temperature'][0]['value']);
-      var vibrationValue = double.parse(data['Vibration'][0]['value']);
-      var currentValue = double.parse(data['Current'][0]['value']);
+      var temperatureValue = data['Temperature'][0];
+      var vibrationValue = data['Vibration'][0];
+      var currentValue = data['Current'][0];
+      var temperaturetimestampValue =
+          DateTime.fromMillisecondsSinceEpoch(data['Temperature'][0]['ts'])
+              .add(Duration(hours: 1));
+      var currenttimestampValue =
+          DateTime.fromMillisecondsSinceEpoch(data['Current'][0]['ts'])
+              .add(Duration(hours: 1));
+      var vibrationtimestampValue =
+          DateTime.fromMillisecondsSinceEpoch(data['Vibration'][0]['ts'])
+              .add(Duration(hours: 1));
       if (mounted) {
         setState(() {
-          temperatureData.add(temperatureValue);
-          vibrationData.add(vibrationValue);
-          currentData.add(currentValue);
+          try {
+            temperatureData.add(double.parse(temperatureValue['value']));
+            temperaturetimestampData.add(temperaturetimestampValue);
+          } catch (e) {
+            temperatureData.add(0);
+            temperaturetimestampData.add(temperaturetimestampValue);
+          }
+          try {
+            vibrationData.add(double.parse(vibrationValue['value']));
+            vibrationtimestampData.add(vibrationtimestampValue);
+          } catch (e) {
+            vibrationData.add(0);
+            vibrationtimestampData.add(vibrationtimestampValue);
+          }
+          try {
+            currentData.add(double.parse(currentValue['value']));
+            currenttimestampData.add(currenttimestampValue);
+          } catch (e) {
+            currentData.add(0);
+            currenttimestampData.add(currenttimestampValue);
+          }
 
           if (temperatureData.length > maxDataLength) {
             temperatureData.removeAt(0);
+            temperaturetimestampData.removeAt(0);
           }
           if (vibrationData.length > maxDataLength) {
             vibrationData.removeAt(0);
+            vibrationtimestampData.removeAt(0);
           }
           if (currentData.length > maxDataLength) {
             currentData.removeAt(0);
+            currenttimestampData.removeAt(0);
           }
         });
       }
@@ -164,33 +199,36 @@ class _ChartsPageState extends State<ChartsPage> {
           children: [
             SfCartesianChart(
               title: ChartTitle(text: 'Temperature'),
-              primaryXAxis: DateTimeAxis(),
+              primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
               series: <LineSeries<double, DateTime>>[
                 LineSeries<double, DateTime>(
                     dataSource: temperatureData,
-                    xValueMapper: (double data, _) => DateTime.now(),
+                    xValueMapper: (double data, int index) =>
+                        temperaturetimestampData[index],
                     yValueMapper: (double data, _) => data,
                     color: Colors.red),
               ],
             ),
             SfCartesianChart(
               title: ChartTitle(text: 'Courant'),
-              primaryXAxis: DateTimeAxis(),
+              primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
               series: <LineSeries<double, DateTime>>[
                 LineSeries<double, DateTime>(
                     dataSource: currentData,
-                    xValueMapper: (double data, _) => DateTime.now(),
+                    xValueMapper: (double data, int index) =>
+                        currenttimestampData[index],
                     yValueMapper: (double data, _) => data,
                     color: Colors.orange),
               ],
             ),
             SfCartesianChart(
               title: ChartTitle(text: 'Vibration'),
-              primaryXAxis: DateTimeAxis(),
+              primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
               series: <LineSeries<double, DateTime>>[
                 LineSeries<double, DateTime>(
                     dataSource: vibrationData,
-                    xValueMapper: (double data, _) => DateTime.now(),
+                    xValueMapper: (double data, int index) =>
+                        vibrationtimestampData[index],
                     yValueMapper: (double data, _) => data,
                     color: Colors.green),
               ],

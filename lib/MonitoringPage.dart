@@ -23,14 +23,14 @@ class _MonitoringPageState extends State<MonitoringPage> {
     FirebaseAuth.instance.signOut();
   }
 
-  double temperature = 0.0;
-  double vibration = 0.0;
-  double current = 0.0;
+  double? temperature = 0.0;
+  double? vibration = 0.0;
+  double? current = 0.0;
 
   String apiURL =
       'http://192.168.1.19:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
   String JWT =
-      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDUzNDA0MywiZXhwIjoxNjgwNTQzMDQzLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.PoWGVjfUFPSVJp6KLQYzo4GhA4b5W96sXVO-jgTJKiEnOejId4cpLYCAqx2TNPQdp4qkP0edyLDDxG3G_xZ96g';
+      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDU2MjM3OCwiZXhwIjoxNjgwNTcxMzc4LCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.eTqBgBW5HAy5tH_LR3-TyrXQRtPCVfLuHggSz9jDNcHlugnw4ekmWvMx75pB5psaPuEJZroK4K0AnRreRtnuXw';
 
   Future<void> _getSensorData() async {
     // Parse the response JSON to extract the sensor values
@@ -43,9 +43,23 @@ class _MonitoringPageState extends State<MonitoringPage> {
       var currentData = data['Current'][0];
       if (mounted) {
         setState(() {
-          temperature = double.parse(temperatureData['value']);
-          vibration = double.parse(vibrationData['value']);
-          current = double.parse(currentData['value']);
+          try {
+            temperature = double.parse(temperatureData['value']);
+            // Handle non-NaN value
+          } catch (e) {
+            // Handle NaN value
+            temperature = null;
+          }
+          if (vibrationData != null) {
+            vibration = double.parse(vibrationData['value']);
+          } else {
+            vibration = null;
+          }
+          if (currentData != null) {
+            current = double.parse(currentData['value']);
+          } else {
+            current = null;
+          }
         });
       }
     });
@@ -181,7 +195,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     ),
                     Center(
                       child: Text(
-                        '${temperature.toStringAsFixed(1)}°C',
+                        '${temperature?.toStringAsFixed(1)}°C',
                         style: TextStyle(
                           fontSize: 24,
                         ),
@@ -221,7 +235,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     ),
                     Center(
                       child: Text(
-                        '${current.toStringAsFixed(1)}A',
+                        '${current?.toStringAsFixed(1)}A',
                         style: TextStyle(
                           fontSize: 24,
                         ),
@@ -261,7 +275,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     ),
                     Center(
                       child: Text(
-                        '${vibration.toStringAsFixed(1)}',
+                        '${vibration?.toStringAsFixed(1)}',
                         style: TextStyle(
                           fontSize: 24,
                         ),
