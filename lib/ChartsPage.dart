@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'SupportPage.dart';
 import 'MonitoringPage.dart';
@@ -28,70 +29,111 @@ class ChartsPage extends StatefulWidget {
 class _ChartsPageState extends State<ChartsPage> {
   String apiURL =
       'http://192.168.1.19:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
-  String JWT =
-      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDU2MjM3OCwiZXhwIjoxNjgwNTcxMzc4LCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.eTqBgBW5HAy5tH_LR3-TyrXQRtPCVfLuHggSz9jDNcHlugnw4ekmWvMx75pB5psaPuEJZroK4K0AnRreRtnuXw';
+  Future<String> _getNewToken() async {
+    // Make a POST request to authenticate and obtain a new JWT token
+    String authURL = 'http://192.168.1.19:8080/api/auth/login';
+    var response = await http.post(Uri.parse(authURL),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(
+            {"username": "tenant@thingsboard.org", "password": "tenant"}));
+    print(response.statusCode);
+    var data = json.decode(response.body);
+    return data['token'];
+  }
+
+  String? _accessToken;
+  DateTime? _tokenExpirationTime;
+
+  Future<String> _getAccessToken() async {
+    // Check if the cached token has expired
+    if (_accessToken != null &&
+        _tokenExpirationTime != null &&
+        _tokenExpirationTime!.isAfter(DateTime.now())) {
+      return _accessToken!;
+    }
+    // Request a new token if the cached token has expired or doesn't exist
+    _accessToken = await _getNewToken();
+    _tokenExpirationTime = DateTime.now().add(Duration(minutes: 30));
+    return _accessToken!;
+  }
+
   List<double> temperatureData = [];
   List<double> currentData = [];
   List<double> vibrationData = [];
-  List<DateTime> temperaturetimestampData = [];
-  List<DateTime> vibrationtimestampData = [];
-  List<DateTime> currenttimestampData = [];
-  int maxDataLength = 50;
+  List<DateTime> timestampData = [];
+  List<double> histtemperatureData = [0, 0, 0, 0];
+  List<double> histcurrentData = [0, 0, 0, 0];
+  List<double> histvibrationData = [0, 0, 0, 0];
+  List<DateTime> histtimestampData = [
+    DateTime.now(),
+    DateTime.now(),
+    DateTime.now(),
+    DateTime.now()
+  ];
 
+  int maxDataLength = 50;
   Future<void> _getSensorlistData() async {
     Timer.periodic(Duration(seconds: 5), (Timer t) async {
-      var response =
-          await http.get(Uri.parse(apiURL), headers: {'Authorization': JWT});
-      var data = json.decode(response.body);
-      var temperatureValue = data['Temperature'][0];
-      var vibrationValue = data['Vibration'][0];
-      var currentValue = data['Current'][0];
-      var temperaturetimestampValue =
-          DateTime.fromMillisecondsSinceEpoch(data['Temperature'][0]['ts'])
-              .add(Duration(hours: 1));
-      var currenttimestampValue =
-          DateTime.fromMillisecondsSinceEpoch(data['Current'][0]['ts'])
-              .add(Duration(hours: 1));
-      var vibrationtimestampValue =
-          DateTime.fromMillisecondsSinceEpoch(data['Vibration'][0]['ts'])
-              .add(Duration(hours: 1));
-      if (mounted) {
+      try {
+        String JWT = await _getAccessToken();
+        var response = await http
+            .get(Uri.parse(apiURL), headers: {'Authorization': 'Bearer $JWT'});
+        var data = json.decode(response.body);
+        var temperatureValue = data['Temperature'][0];
+        var vibrationValue = data['Vibration'][0];
+        var currentValue = data['Current'][0];
+        var timestampValue =
+            DateTime.fromMillisecondsSinceEpoch(data['Temperature'][0]['ts'])
+                .add(Duration(hours: 1));
+        if (mounted) {
+          setState(() {
+            try {
+              temperatureData.add(double.parse(temperatureValue['value']));
+              timestampData.add(timestampValue);
+            } catch (e) {
+              temperatureData.add(0);
+              timestampData.add(timestampValue);
+            }
+            try {
+              vibrationData.add(double.parse(vibrationValue['value']));
+            } catch (e) {
+              vibrationData.add(0);
+            }
+            try {
+              currentData.add(double.parse(currentValue['value']));
+            } catch (e) {
+              currentData.add(0);
+            }
+            if (temperatureData.length > maxDataLength) {
+              temperatureData.removeAt(0);
+              timestampData.removeAt(0);
+            }
+            if (vibrationData.length > maxDataLength) {
+              vibrationData.removeAt(0);
+              timestampData.removeAt(0);
+            }
+            if (currentData.length > maxDataLength) {
+              currentData.removeAt(0);
+              timestampData.removeAt(0);
+            }
+          });
+        }
+        // Call the method that updates the historical data lists
+      } on TimeoutException catch (_) {
         setState(() {
-          try {
-            temperatureData.add(double.parse(temperatureValue['value']));
-            temperaturetimestampData.add(temperaturetimestampValue);
-          } catch (e) {
-            temperatureData.add(0);
-            temperaturetimestampData.add(temperaturetimestampValue);
-          }
-          try {
-            vibrationData.add(double.parse(vibrationValue['value']));
-            vibrationtimestampData.add(vibrationtimestampValue);
-          } catch (e) {
-            vibrationData.add(0);
-            vibrationtimestampData.add(vibrationtimestampValue);
-          }
-          try {
-            currentData.add(double.parse(currentValue['value']));
-            currenttimestampData.add(currenttimestampValue);
-          } catch (e) {
-            currentData.add(0);
-            currenttimestampData.add(currenttimestampValue);
-          }
-
-          if (temperatureData.length > maxDataLength) {
-            temperatureData.removeAt(0);
-            temperaturetimestampData.removeAt(0);
-          }
-          if (vibrationData.length > maxDataLength) {
-            vibrationData.removeAt(0);
-            vibrationtimestampData.removeAt(0);
-          }
-          if (currentData.length > maxDataLength) {
-            currentData.removeAt(0);
-            currenttimestampData.removeAt(0);
-          }
+          temperatureData = histtemperatureData;
+          currentData = histcurrentData;
+          vibrationData = histvibrationData;
+          timestampData = histtimestampData;
         });
+
+        // Call the method that updates the historical data lists
+      } on SocketException {
+        setState(() {});
+        temperatureData = histtemperatureData;
+        currentData = histcurrentData;
+        vibrationData = histvibrationData;
+        timestampData = histtimestampData;
       }
     });
   }
@@ -101,7 +143,6 @@ class _ChartsPageState extends State<ChartsPage> {
     super.initState();
     _getSensorlistData(); // Call the API when the widget is first created
   }
-
   // void initState() {
   //   super.initState();
   //   final now = DateTime.now();
@@ -183,7 +224,7 @@ class _ChartsPageState extends State<ChartsPage> {
               },
             ),
             ListTile(
-              title: Text('Support'),
+              title: Text('About Us'),
               onTap: () {
                 Navigator.pushReplacement(
                   context,
@@ -198,13 +239,13 @@ class _ChartsPageState extends State<ChartsPage> {
         child: Column(
           children: [
             SfCartesianChart(
-              title: ChartTitle(text: 'Temperature'),
+              title: ChartTitle(text: 'Température'),
               primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
               series: <LineSeries<double, DateTime>>[
                 LineSeries<double, DateTime>(
                     dataSource: temperatureData,
                     xValueMapper: (double data, int index) =>
-                        temperaturetimestampData[index],
+                        timestampData[index],
                     yValueMapper: (double data, _) => data,
                     color: Colors.red),
               ],
@@ -216,7 +257,7 @@ class _ChartsPageState extends State<ChartsPage> {
                 LineSeries<double, DateTime>(
                     dataSource: currentData,
                     xValueMapper: (double data, int index) =>
-                        currenttimestampData[index],
+                        timestampData[index],
                     yValueMapper: (double data, _) => data,
                     color: Colors.orange),
               ],
@@ -228,7 +269,7 @@ class _ChartsPageState extends State<ChartsPage> {
                 LineSeries<double, DateTime>(
                     dataSource: vibrationData,
                     xValueMapper: (double data, int index) =>
-                        vibrationtimestampData[index],
+                        timestampData[index],
                     yValueMapper: (double data, _) => data,
                     color: Colors.green),
               ],

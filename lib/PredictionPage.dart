@@ -67,7 +67,7 @@ class _PredictionPageState extends State<PredictionPage> {
               },
             ),
             ListTile(
-              title: Text('Support'),
+              title: Text('About Us'),
               onTap: () {
                 Navigator.pushReplacement(
                   context,

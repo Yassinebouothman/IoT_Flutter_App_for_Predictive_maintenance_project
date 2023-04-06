@@ -67,7 +67,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
-              title: Text('Support'),
+              title: Text('About Us'),
               onTap: () {
                 Navigator.pushReplacement(
                   context,

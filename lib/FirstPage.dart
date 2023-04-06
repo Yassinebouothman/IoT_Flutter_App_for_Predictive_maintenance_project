@@ -175,7 +175,7 @@ class _FirstPageState extends State<FirstPage> {
                   height: 20,
                 ),
                 Text(
-                  'bouyassine48@gmail.com',
+                  'yassine.bouothman@ult-tunisie.com',
                   style: TextStyle(
                       color: Colors.grey[700],
                       fontSize: 15,

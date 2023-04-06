@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -18,53 +19,89 @@ class MonitoringPage extends StatefulWidget {
 }
 
 class _MonitoringPageState extends State<MonitoringPage> {
+  Timer? _timer;
+
   // sign user out method
   void signUserOut() async {
     FirebaseAuth.instance.signOut();
   }
 
-  double? temperature = 0.0;
-  double? vibration = 0.0;
-  double? current = 0.0;
+  double temperature = 0.0;
+  double vibration = 0.0;
+  double current = 0.0;
 
   String apiURL =
       'http://192.168.1.19:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
-  String JWT =
-      'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiM2E5MTkyMTAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJpc3MiOiJ0aGluZ3Nib2FyZC5pbyIsImlhdCI6MTY4MDU2MjM3OCwiZXhwIjoxNjgwNTcxMzc4LCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiM2EyODQ4ZjAtMTBiZi0xMWVkLWJjNDAtMGQ3NGI5ZjIzM2IzIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.eTqBgBW5HAy5tH_LR3-TyrXQRtPCVfLuHggSz9jDNcHlugnw4ekmWvMx75pB5psaPuEJZroK4K0AnRreRtnuXw';
+
+  Future<String> _getNewToken() async {
+    // Make a POST request to authenticate and obtain a new JWT token
+    String authURL = 'http://192.168.1.19:8080/api/auth/login';
+    var response = await http.post(Uri.parse(authURL),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(
+            {"username": "tenant@thingsboard.org", "password": "tenant"}));
+    print(response.statusCode);
+    var data = json.decode(response.body);
+    return data['token'];
+  }
+
+  String? _accessToken;
+  DateTime? _tokenExpirationTime;
+
+  Future<String> _getAccessToken() async {
+    // Check if the cached token has expired
+    if (_accessToken != null &&
+        _tokenExpirationTime != null &&
+        _tokenExpirationTime!.isAfter(DateTime.now())) {
+      return _accessToken!;
+    }
+    // Request a new token if the cached token has expired or doesn't exist
+    _accessToken = await _getNewToken();
+    _tokenExpirationTime = DateTime.now().add(Duration(minutes: 30));
+    return _accessToken!;
+  }
 
   Future<void> _getSensorData() async {
     // Parse the response JSON to extract the sensor values
-    Timer.periodic(Duration(seconds: 5), (Timer t) async {
-      var response =
-          await http.get(Uri.parse(apiURL), headers: {'Authorization': JWT});
-      var data = json.decode(response.body);
-      var temperatureData = data['Temperature'][0];
-      var vibrationData = data['Vibration'][0];
-      var currentData = data['Current'][0];
-      if (mounted) {
-        setState(() {
-          try {
-            temperature = double.parse(temperatureData['value']);
-            // Handle non-NaN value
-          } catch (e) {
-            // Handle NaN value
-            temperature = null;
-          }
-          if (vibrationData != null) {
-            vibration = double.parse(vibrationData['value']);
-          } else {
-            vibration = null;
-          }
-          if (currentData != null) {
-            current = double.parse(currentData['value']);
-          } else {
-            current = null;
-          }
-        });
+    _timer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
+      try {
+        String JWT = await _getAccessToken();
+        var response = await http
+            .get(Uri.parse(apiURL), headers: {'Authorization': 'Bearer $JWT'});
+        var data = json.decode(response.body);
+        var temperatureData = data['Temperature'][0];
+        var vibrationData = data['Vibration'][0];
+        var currentData = data['Current'][0];
+
+        // Store the latest values
+        if (mounted) {
+          setState(() {
+            try {
+              temperature = double.parse(temperatureData['value']);
+              // Handle non-NaN value
+            } catch (e) {
+              // Handle NaN value
+              temperature = 0.0;
+            }
+            try {
+              vibration = double.parse(vibrationData['value']);
+            } catch (e) {
+              vibration = 0.0;
+            }
+            try {
+              current = double.parse(currentData['value']);
+            } catch (e) {
+              current = 0.0;
+            }
+          });
+        }
+      } on TimeoutException {
+        _timer?.cancel();
+        // If a connection error occurs, display the latest values
+      } on SocketException {
+        _timer?.cancel();
       }
     });
-
-    // Update the state with the new sensor values
   }
 
   @override
@@ -151,7 +188,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
               },
             ),
             ListTile(
-              title: Text('Support'),
+              title: Text('About Us'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -166,7 +203,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
         child: Column(
           children: [
             SizedBox(
-              height: 60,
+              height: 70,
             ),
             Column(
               children: [
@@ -183,7 +220,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                   children: [
                     Center(
                       child: Text(
-                        'Temperature',
+                        'Température',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -195,7 +232,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     ),
                     Center(
                       child: Text(
-                        '${temperature?.toStringAsFixed(1)}°C',
+                        '${temperature.toStringAsFixed(1)}°C',
                         style: TextStyle(
                           fontSize: 24,
                         ),
@@ -206,7 +243,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
               ],
             ),
             SizedBox(
-              height: 25,
+              height: 40,
             ),
             Column(
               children: [
@@ -235,7 +272,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     ),
                     Center(
                       child: Text(
-                        '${current?.toStringAsFixed(1)}A',
+                        '${current.toStringAsFixed(1)}A',
                         style: TextStyle(
                           fontSize: 24,
                         ),
@@ -246,7 +283,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
               ],
             ),
             SizedBox(
-              height: 25.0,
+              height: 40,
             ),
             Column(
               children: [
@@ -275,7 +312,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     ),
                     Center(
                       child: Text(
-                        '${vibration?.toStringAsFixed(1)}',
+                        '${vibration.toStringAsFixed(1)}',
                         style: TextStyle(
                           fontSize: 24,
                         ),
