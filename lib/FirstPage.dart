@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:predictive_maintenance_app/MonitoringPage.dart';
 import 'package:predictive_maintenance_app/components/my_button.dart';
 import 'package:predictive_maintenance_app/components/my_textfield.dart';
 
 class FirstPage extends StatefulWidget {
-  FirstPage({super.key});
-
+  const FirstPage({Key? key}) : super(key: key);
   @override
   State<FirstPage> createState() => _FirstPageState();
 }
@@ -33,8 +33,12 @@ class _FirstPageState extends State<FirstPage> {
         email: emailController.text,
         password: passwordController.text,
       );
+      print("signIn successful, navigating to MonitoringPage");
+
       // pop the loading circle
       Navigator.pop(context);
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => MonitoringPage()));
     } on FirebaseAuthException catch (e) {
       // pop the loading circle
       Navigator.pop(context);

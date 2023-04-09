@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'PredictionPage.dart';
@@ -8,6 +7,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'ChartsPage.dart';
 import 'SettingsPage.dart';
+import 'HistoryPage.dart';
+import 'package:provider/provider.dart';
+import 'Provider.dart';
 // import 'Provider.dart';
 // import 'package:provider/provider.dart';
 
@@ -21,21 +23,16 @@ class MonitoringPage extends StatefulWidget {
 class _MonitoringPageState extends State<MonitoringPage> {
   Timer? _timer;
 
-  // sign user out method
-  void signUserOut() async {
-    FirebaseAuth.instance.signOut();
-  }
-
   double temperature = 0.0;
   double vibration = 0.0;
   double current = 0.0;
 
   String apiURL =
-      'http://192.168.1.19:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
+      'http://192.168.1.16:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
 
   Future<String> _getNewToken() async {
     // Make a POST request to authenticate and obtain a new JWT token
-    String authURL = 'http://192.168.1.19:8080/api/auth/login';
+    String authURL = 'http://192.168.1.16:8080/api/auth/login';
     var response = await http.post(Uri.parse(authURL),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(
@@ -112,6 +109,8 @@ class _MonitoringPageState extends State<MonitoringPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
     //provider code
 //     final sensorDataProvider =
 //         Provider.of<SensorDataProvider>(context, listen: true);
@@ -125,23 +124,17 @@ class _MonitoringPageState extends State<MonitoringPage> {
 //     sensorDataProvider.startFetchingData();
 
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Visualisation'),
-        backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            onPressed: signUserOut,
-            icon: const Icon(Icons.logout),
-          )
-        ],
+        backgroundColor: Colors.orange,
       ),
       drawer: Drawer(
         child: ListView(
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: Colors.orange,
               ),
               child: Text(
                 'Menu',
@@ -151,50 +144,96 @@ class _MonitoringPageState extends State<MonitoringPage> {
                 ),
               ),
             ),
-            ListTile(
-              title: Text('Visualisation'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MonitoringPage()),
-                );
-              },
-            ),
-            ListTile(
-              title: Text('Courbes'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ChartsPage()),
-                );
-              },
-            ),
-            ListTile(
-              title: Text('Prédiction'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PredictionPage()),
-                );
-              },
-            ),
-            ListTile(
-              title: Text('Paramètres'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SettingsPage()),
-                );
-              },
-            ),
-            ListTile(
-              title: Text('About Us'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SupportPage()),
-                );
-              },
+            Container(
+              padding: EdgeInsets.all(18),
+              child: Wrap(
+                runSpacing: 16,
+                children: [
+                  ExpansionTile(
+                    title: Text('Temps réel'),
+                    iconColor: Colors.orange,
+                    textColor: Colors.orange,
+                    leading: Icon(Icons.monitor_heart),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 25),
+                        child: ListTile(
+                          title: Text('Visualisation'),
+                          leading: Icon(Icons.sensors),
+                          iconColor: Colors.orange,
+                          textColor: Colors.orange,
+                          onTap: () {},
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 25),
+                        child: ListTile(
+                          title: Text('Courbes'),
+                          leading: Icon(Icons.show_chart),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChartsPage()),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  ListTile(
+                    title: Text('Historique'),
+                    leading: Icon(Icons.history),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HistoryPage()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Prédiction'),
+                    leading: Icon(Icons.query_stats),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PredictionPage()),
+                      );
+                    },
+                  ),
+                  // const Divider(
+                  //   color: Colors.black54,
+                  // ),
+                  ListTile(
+                    title: Text('Paramètres'),
+                    leading: Icon(Icons.settings),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SettingsPage()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('About Us'),
+                    leading: Icon(Icons.groups),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SupportPage()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Log out'),
+                    leading: Icon(Icons.logout),
+                    onTap: () async {
+                      await userProvider.logout(context);
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
