@@ -6,6 +6,7 @@ import 'SettingsPage.dart';
 import 'HistoryPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PredictionPage extends StatefulWidget {
   const PredictionPage({Key? key}) : super(key: key);
@@ -17,6 +18,8 @@ class _PredictionPageState extends State<PredictionPage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final useracc = FirebaseAuth.instance.currentUser!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Prediction'),
@@ -25,16 +28,18 @@ class _PredictionPageState extends State<PredictionPage> {
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.orange,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.orange),
+              accountName: Text(
+                  useracc.email!.substring(0, useracc.email!.indexOf('@'))),
+              accountEmail: Text(useracc.email!),
+              currentAccountPicture: CircleAvatar(
+                child: Icon(
+                  Icons.person,
+                  size: 50,
+                  color: Colors.orange,
                 ),
+                backgroundColor: Color(0xFFFFFFFFF),
               ),
             ),
             Container(
@@ -133,7 +138,30 @@ class _PredictionPageState extends State<PredictionPage> {
         ),
       ),
       body: Center(
-        child: Text('Prediction Page'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Time to Failure',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'XXX hours',
+                style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

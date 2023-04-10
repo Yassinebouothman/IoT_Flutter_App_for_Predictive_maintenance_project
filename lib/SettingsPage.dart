@@ -6,6 +6,7 @@ import 'ChartsPage.dart';
 import 'HistoryPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -14,9 +15,14 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool _notificationsEnabled = false;
+  double _sliderValue = 0;
+  bool _isDarkMode = false;
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final useracc = FirebaseAuth.instance.currentUser!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Paramètres'),
@@ -25,16 +31,18 @@ class _SettingsPageState extends State<SettingsPage> {
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.orange,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.orange),
+              accountName: Text(
+                  useracc.email!.substring(0, useracc.email!.indexOf('@'))),
+              accountEmail: Text(useracc.email!),
+              currentAccountPicture: CircleAvatar(
+                child: Icon(
+                  Icons.person,
+                  size: 50,
+                  color: Colors.orange,
                 ),
+                backgroundColor: Color(0xFFFFFFFFF),
               ),
             ),
             Container(
@@ -80,7 +88,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   ListTile(
                     title: Text('Historique'),
-                    leading: Icon(Icons.settings),
+                    leading: Icon(Icons.history),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -106,7 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: Text('Paramètres'),
                     iconColor: Colors.orange,
                     textColor: Colors.orange,
-                    leading: Icon(Icons.history),
+                    leading: Icon(Icons.settings),
                     onTap: () {},
                   ),
                   ListTile(
@@ -124,6 +132,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     leading: Icon(Icons.logout),
                     onTap: () async {
                       print('userProvider: $userProvider');
+                      await userProvider.logout(context);
                     },
                   ),
                 ],
@@ -132,7 +141,71 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
-      body: Center(),
+      body: Container(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Notifications',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SwitchListTile(
+              title: Text('Enable notifications'),
+              value: _notificationsEnabled,
+              onChanged: (bool value) {
+                setState(() {
+                  _notificationsEnabled = value;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Sound',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            RadioListTile(
+              title: Text('Sound 1'),
+              value: 1,
+              groupValue: 1,
+              onChanged: (value) {},
+            ),
+            RadioListTile(
+              title: Text('Sound 2'),
+              value: 2,
+              groupValue: 1,
+              onChanged: (value) {},
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Brightness',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Slider(
+              value: _sliderValue,
+              onChanged: (double value) {
+                setState(() {
+                  _sliderValue = value;
+                });
+              },
+              min: 0,
+              max: 100,
+              divisions: 10,
+              label: '$_sliderValue',
+            ),
+            const SizedBox(height: 20.0),
+            SwitchListTile(
+              title: const Text('Dark Mode'),
+              value: _isDarkMode,
+              onChanged: (bool value) {
+                setState(() {
+                  _isDarkMode = value;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

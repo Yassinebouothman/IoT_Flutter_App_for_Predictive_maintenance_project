@@ -7,7 +7,9 @@ import 'SupportPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
 import 'DatabseHelper.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({Key? key}) : super(key: key);
@@ -16,127 +18,199 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  List<double> temperatureList = [];
+  List<double> currentList = [];
+  List<double> vibrationList = [];
+  List<DateTime> timestampList = [];
+
+  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastFiveSensorData();
+  }
+
+  Future<void> _loadLastFiveSensorData() async {
+    final lastFiveSensorData = await _databaseHelper.getLastFiveSensorData();
+
+    setState(() {
+      temperatureList =
+          lastFiveSensorData.map((data) => data.temperature).toList();
+      currentList = lastFiveSensorData.map((data) => data.current).toList();
+      vibrationList = lastFiveSensorData.map((data) => data.vibration).toList();
+      timestampList = lastFiveSensorData.map((data) => data.timestamp).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final useracc = FirebaseAuth.instance.currentUser!;
+
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Historique'),
-          backgroundColor: Colors.orange,
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
+      appBar: AppBar(
+        title: Text('Historique'),
+        backgroundColor: Colors.orange,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.orange),
+              accountName: Text(
+                  useracc.email!.substring(0, useracc.email!.indexOf('@'))),
+              accountEmail: Text(useracc.email!),
+              currentAccountPicture: CircleAvatar(
+                child: Icon(
+                  Icons.person,
+                  size: 50,
                   color: Colors.orange,
                 ),
-                child: Text(
-                  'Menu',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
+                backgroundColor: Color(0xFFFFFFFFF),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(18),
+              child: Wrap(
+                runSpacing: 16,
+                children: [
+                  ExpansionTile(
+                    title: Text('Temps réel'),
+                    iconColor: Colors.orange,
+                    textColor: Colors.orange,
+                    leading: Icon(Icons.monitor_heart),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 25),
+                        child: ListTile(
+                          title: Text('Visualisation'),
+                          leading: Icon(Icons.sensors),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MonitoringPage()),
+                            );
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 25),
+                        child: ListTile(
+                          title: Text('Courbes'),
+                          leading: Icon(Icons.show_chart),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChartsPage()),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  ListTile(
+                    title: Text('Historique'),
+                    iconColor: Colors.orange,
+                    textColor: Colors.orange,
+                    leading: Icon(Icons.history),
+                    onTap: () {},
+                  ),
+                  ListTile(
+                    title: Text('Prédiction'),
+                    leading: Icon(Icons.query_stats),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PredictionPage()),
+                      );
+                    },
+                  ),
+                  // const Divider(
+                  //   color: Colors.black54,
+                  // ),
+                  ListTile(
+                    title: Text('Paramètres'),
+                    leading: Icon(Icons.settings),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SettingsPage()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('About Us'),
+                    leading: Icon(Icons.groups),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SupportPage()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Log out'),
+                    leading: Icon(Icons.logout),
+                    onTap: () async {
+                      print('userProvider: $userProvider');
+                      await userProvider.logout(context);
+                    },
+                  ),
+                ],
               ),
-              Container(
-                padding: EdgeInsets.all(18),
-                child: Wrap(
-                  runSpacing: 16,
-                  children: [
-                    ExpansionTile(
-                      title: Text('Temps réel'),
-                      iconColor: Colors.orange,
-                      textColor: Colors.orange,
-                      leading: Icon(Icons.monitor_heart),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 25),
-                          child: ListTile(
-                            title: Text('Visualisation'),
-                            leading: Icon(Icons.sensors),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => MonitoringPage()),
-                              );
-                            },
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 25),
-                          child: ListTile(
-                            title: Text('Courbes'),
-                            leading: Icon(Icons.show_chart),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => ChartsPage()),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    ListTile(
-                      title: Text('Historique'),
-                      iconColor: Colors.orange,
-                      textColor: Colors.orange,
-                      leading: Icon(Icons.history),
-                      onTap: () {},
-                    ),
-                    ListTile(
-                      title: Text('Prédiction'),
-                      leading: Icon(Icons.query_stats),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => PredictionPage()),
-                        );
-                      },
-                    ),
-                    // const Divider(
-                    //   color: Colors.black54,
-                    // ),
-                    ListTile(
-                      title: Text('Paramètres'),
-                      leading: Icon(Icons.settings),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SettingsPage()),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      title: Text('About Us'),
-                      leading: Icon(Icons.groups),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SupportPage()),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      title: Text('Log out'),
-                      leading: Icon(Icons.logout),
-                      onTap: () async {
-                        print('userProvider: $userProvider');
-                        await userProvider.logout(context);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-        body: Center());
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SfCartesianChart(
+              title: ChartTitle(text: 'Température'),
+              primaryXAxis:
+                  DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
+              series: <LineSeries<double, DateTime>>[
+                LineSeries<double, DateTime>(
+                    dataSource: temperatureList,
+                    xValueMapper: (double data, int index) =>
+                        timestampList[index],
+                    yValueMapper: (double data, _) => data,
+                    color: Colors.red),
+              ],
+            ),
+            SfCartesianChart(
+              title: ChartTitle(text: 'Courant'),
+              primaryXAxis:
+                  DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
+              series: <LineSeries<double, DateTime>>[
+                LineSeries<double, DateTime>(
+                    dataSource: currentList,
+                    xValueMapper: (double data, int index) =>
+                        timestampList[index],
+                    yValueMapper: (double data, _) => data,
+                    color: Colors.orange),
+              ],
+            ),
+            SfCartesianChart(
+              title: ChartTitle(text: 'Vibration'),
+              primaryXAxis:
+                  DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
+              series: <LineSeries<double, DateTime>>[
+                LineSeries<double, DateTime>(
+                    dataSource: vibrationList,
+                    xValueMapper: (double data, int index) =>
+                        timestampList[index],
+                    yValueMapper: (double data, _) => data,
+                    color: Colors.green),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,6 +1,8 @@
 import 'dart:async';
+//import 'dart:ffi';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'models/sensordata.dart';
 
 class DatabaseHelper {
   static final _databaseName = 'sensorData.db';
@@ -46,27 +48,32 @@ class DatabaseHelper {
   }
 
   Future<int> insertSensorData(double temperature, double current,
-      double vibration, DateTime timestamp) async {
+      double vibration, int timestamp) async {
     final db = await database;
     var res = await db.insert(table, {
       columnTemperature: temperature,
       columnCurrent: current,
       columnVibration: vibration,
-      columnTimestamp: timestamp.millisecondsSinceEpoch
+      columnTimestamp: timestamp
     });
     return res;
   }
 
-  Future<List<Map<String, dynamic>>> getLastFiveSensorData() async {
+// in your DatabaseHelper class
+  Future<List<SensorData>> getLastFiveSensorData() async {
     final db = await database;
     var res = await db.rawQuery('''
-      SELECT * FROM $table ORDER BY $columnId DESC LIMIT 5
-    ''');
-    return res;
-  }
-
-  Future<List<Map<String, dynamic>>> querySensorData() async {
-    Database db = await instance.database;
-    return await db.query(table, orderBy: '$columnId DESC', limit: 5);
+    SELECT $columnTemperature, $columnCurrent, $columnVibration, $columnTimestamp 
+    FROM $table 
+    ORDER BY $columnId DESC 
+    LIMIT 5
+  ''');
+    return res
+        .map((data) => SensorData(
+            data[columnTemperature] as double,
+            data[columnVibration] as double,
+            data[columnCurrent] as double,
+            DateTime.fromMillisecondsSinceEpoch(data[columnTimestamp] as int)))
+        .toList();
   }
 }

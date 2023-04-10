@@ -10,6 +10,8 @@ import 'SettingsPage.dart';
 import 'HistoryPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 // import 'Provider.dart';
 // import 'package:provider/provider.dart';
 
@@ -110,6 +112,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final useracc = FirebaseAuth.instance.currentUser!;
 
     //provider code
 //     final sensorDataProvider =
@@ -132,16 +135,18 @@ class _MonitoringPageState extends State<MonitoringPage> {
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.orange,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.orange),
+              accountName: Text(
+                  useracc.email!.substring(0, useracc.email!.indexOf('@'))),
+              accountEmail: Text(useracc.email!),
+              currentAccountPicture: CircleAvatar(
+                child: Icon(
+                  Icons.person,
+                  size: 50,
+                  color: Colors.orange,
                 ),
+                backgroundColor: Color(0xFFFFFFFFF),
               ),
             ),
             Container(
@@ -154,6 +159,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     iconColor: Colors.orange,
                     textColor: Colors.orange,
                     leading: Icon(Icons.monitor_heart),
+                    initiallyExpanded: true,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 25),
@@ -240,10 +246,9 @@ class _MonitoringPageState extends State<MonitoringPage> {
       ),
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 70,
-            ),
             Column(
               children: [
                 Icon(
@@ -267,13 +272,22 @@ class _MonitoringPageState extends State<MonitoringPage> {
                       ),
                     ),
                     SizedBox(
-                      height: 8.0,
+                      height: 10,
                     ),
                     Center(
-                      child: Text(
-                        '${temperature.toStringAsFixed(1)}°C',
-                        style: TextStyle(
-                          fontSize: 24,
+                      child: Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${temperature.toStringAsFixed(2)} °C',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            //color: Colors.red),
+                          ),
                         ),
                       ),
                     ),
@@ -282,7 +296,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
               ],
             ),
             SizedBox(
-              height: 40,
+              height: 30,
             ),
             Column(
               children: [
@@ -295,7 +309,8 @@ class _MonitoringPageState extends State<MonitoringPage> {
                   width: 16.0,
                 ),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Center(
                       child: Text(
@@ -307,13 +322,22 @@ class _MonitoringPageState extends State<MonitoringPage> {
                       ),
                     ),
                     SizedBox(
-                      height: 8.0,
+                      height: 10,
                     ),
                     Center(
-                      child: Text(
-                        '${current.toStringAsFixed(1)}A',
-                        style: TextStyle(
-                          fontSize: 24,
+                      child: Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${current.toStringAsFixed(2)} A',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            //color: Colors.red),
+                          ),
                         ),
                       ),
                     ),
@@ -322,7 +346,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
               ],
             ),
             SizedBox(
-              height: 40,
+              height: 30,
             ),
             Column(
               children: [
@@ -347,13 +371,22 @@ class _MonitoringPageState extends State<MonitoringPage> {
                       ),
                     ),
                     SizedBox(
-                      height: 8.0,
+                      height: 10,
                     ),
                     Center(
-                      child: Text(
-                        '${vibration.toStringAsFixed(1)}',
-                        style: TextStyle(
-                          fontSize: 24,
+                      child: Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${vibration.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            //color: Colors.red),
+                          ),
                         ),
                       ),
                     ),

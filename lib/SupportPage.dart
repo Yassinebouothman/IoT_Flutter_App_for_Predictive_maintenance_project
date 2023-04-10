@@ -6,6 +6,7 @@ import 'SettingsPage.dart';
 import 'HistoryPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SupportPage extends StatefulWidget {
   const SupportPage({Key? key}) : super(key: key);
@@ -17,25 +18,28 @@ class _SupportPageState extends State<SupportPage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final useracc = FirebaseAuth.instance.currentUser!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('About Us'),
+        title: Text('À Propos'),
         backgroundColor: Colors.orange,
       ),
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.orange,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.orange),
+              accountName: Text(
+                  useracc.email!.substring(0, useracc.email!.indexOf('@'))),
+              accountEmail: Text(useracc.email!),
+              currentAccountPicture: CircleAvatar(
+                child: Icon(
+                  Icons.person,
+                  size: 50,
+                  color: Colors.orange,
                 ),
+                backgroundColor: Color(0xFFFFFFFFF),
               ),
             ),
             Container(
@@ -148,12 +152,15 @@ class _SupportPageState extends State<SupportPage> {
             SizedBox(
               height: 20,
             ),
-            Text(
-              'Notre projet de maintenance prédictive est le résultat d\'une collaboration entre une équipe d\'étudiants ingénieurs en mécatronique à l\'ULT passionnés par l\'exploitation de la puissance de la technologie pour stimuler l\'innovation et l\'efficacité dans les pratiques de maintenance industrielle. \nGrâce à une compréhension approfondie des défis auxquels sont confrontées les équipes de maintenance, nous avons développé un système intelligent qui combine des algorithmes d\'apprentissage automatique, des capteurs IoT et des analyses en temps réel pour prévoir les pannes d\'équipement et permettre des stratégies de maintenance proactives. \nNotre objectif est d\'aider les entreprises à réduire les temps d\'arrêt, à augmenter la productivité et à optimiser les coûts de maintenance, ce qui se traduit par une amélioration des performances opérationnelles et une rentabilité accrue.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, height: 1.5),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Notre projet de maintenance prédictive est le résultat d\'une collaboration entre une équipe d\'étudiants ingénieurs en mécatronique à l\'ULT passionnés par l\'exploitation de la puissance de la technologie pour stimuler l\'innovation et l\'efficacité dans les pratiques de maintenance industrielle. \n\nGrâce à une compréhension approfondie des défis auxquels sont confrontées les équipes de maintenance, nous avons développé un système intelligent qui combine des algorithmes d\'apprentissage automatique, des capteurs IoT et des analyses en temps réel pour prévoir les pannes d\'équipement et permettre des stratégies de maintenance proactives. \n\nNotre objectif est d\'aider les entreprises à réduire les temps d\'arrêt, à augmenter la productivité et à optimiser les coûts de maintenance, ce qui se traduit par une amélioration des performances opérationnelles et une rentabilité accrue.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, height: 1.5),
+              ),
             ),
-            SizedBox(height: 70),
+            SizedBox(height: 20),
             Text(
               'Email: yassine.bouothman@ult-tunisie.com\n'
               'Téléphone ou WhatsApp: +216 95 593 167\n'

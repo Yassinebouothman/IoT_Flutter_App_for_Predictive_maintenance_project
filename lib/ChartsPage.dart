@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'DatabseHelper.dart';
 import 'SupportPage.dart';
@@ -65,17 +66,8 @@ class _ChartsPageState extends State<ChartsPage> {
   List<double> currentData = [];
   List<double> vibrationData = [];
   List<DateTime> timestampData = [];
-  List<double> histtemperatureData = [0, 0, 0, 0];
-  List<double> histcurrentData = [0, 0, 0, 0];
-  List<double> histvibrationData = [0, 0, 0, 0];
-  List<DateTime> histtimestampData = [
-    DateTime.now(),
-    DateTime.now(),
-    DateTime.now(),
-    DateTime.now()
-  ];
-
   int maxDataLength = 50;
+
   Future<void> _getSensorlistData() async {
     Timer.periodic(Duration(seconds: 5), (Timer t) async {
       try {
@@ -83,12 +75,13 @@ class _ChartsPageState extends State<ChartsPage> {
         var response = await http
             .get(Uri.parse(apiURL), headers: {'Authorization': 'Bearer $JWT'});
         var data = json.decode(response.body);
+        print(data['Temperature'][0]['ts']);
         var temperatureValue = data['Temperature'][0];
         var vibrationValue = data['Vibration'][0];
         var currentValue = data['Current'][0];
-        var timestampValue =
-            DateTime.fromMillisecondsSinceEpoch(data['Temperature'][0]['ts'])
-                .add(Duration(hours: 1));
+        var timestampValue = data['Temperature'][0]['ts'];
+
+        print(timestampValue);
         try {
           await DatabaseHelper.instance.insertSensorData(
               double.parse(temperatureValue['value']),
@@ -100,14 +93,14 @@ class _ChartsPageState extends State<ChartsPage> {
         }
         if (mounted) {
           setState(() {
+            timestampData.add(
+                DateTime.fromMillisecondsSinceEpoch(timestampValue)
+                    .add(Duration(hours: 1)));
             try {
               temperatureData.add(double.parse(temperatureValue['value']));
-              timestampData.add(timestampValue);
             } catch (e) {
               temperatureData.add(0);
-              timestampData.add(timestampValue);
             }
-            // Insert data into the database
             try {
               vibrationData.add(double.parse(vibrationValue['value']));
             } catch (e) {
@@ -120,39 +113,25 @@ class _ChartsPageState extends State<ChartsPage> {
             }
             if (temperatureData.length > maxDataLength) {
               temperatureData.removeAt(0);
-              timestampData.removeAt(0);
             }
             if (vibrationData.length > maxDataLength) {
               vibrationData.removeAt(0);
-              timestampData.removeAt(0);
             }
             if (currentData.length > maxDataLength) {
               currentData.removeAt(0);
+            }
+            if (timestampData.length > maxDataLength) {
               timestampData.removeAt(0);
             }
           });
         }
         // Call the method that updates the historical data lists
       } on TimeoutException catch (_) {
-        if (mounted) {
-          setState(() {
-            temperatureData = histtemperatureData;
-            currentData = histcurrentData;
-            vibrationData = histvibrationData;
-            timestampData = histtimestampData;
-          });
-        }
+        print('Timout error');
 
         // Call the method that updates the historical data lists
       } on SocketException {
-        if (mounted) {
-          setState(() {
-            temperatureData = histtemperatureData;
-            currentData = histcurrentData;
-            vibrationData = histvibrationData;
-            timestampData = histtimestampData;
-          });
-        }
+        print('Socket error');
       }
     });
   }
@@ -177,7 +156,7 @@ class _ChartsPageState extends State<ChartsPage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-
+    final useracc = FirebaseAuth.instance.currentUser!;
     //provider code
 
     // final sensorDataProvider =
@@ -199,16 +178,18 @@ class _ChartsPageState extends State<ChartsPage> {
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.orange,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.orange),
+              accountName: Text(
+                  useracc.email!.substring(0, useracc.email!.indexOf('@'))),
+              accountEmail: Text(useracc.email!),
+              currentAccountPicture: CircleAvatar(
+                child: Icon(
+                  Icons.person,
+                  size: 50,
+                  color: Colors.orange,
                 ),
+                backgroundColor: Color(0xFFFFFFFFF),
               ),
             ),
             Container(
@@ -221,6 +202,7 @@ class _ChartsPageState extends State<ChartsPage> {
                     iconColor: Colors.orange,
                     textColor: Colors.orange,
                     leading: Icon(Icons.monitor_heart),
+                    initiallyExpanded: true,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 25),
