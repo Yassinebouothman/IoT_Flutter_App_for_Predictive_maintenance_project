@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:predictive_maintenance_app/MonitoringPage.dart';
 import 'package:predictive_maintenance_app/components/my_button.dart';
 import 'package:predictive_maintenance_app/components/my_textfield.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -37,12 +38,10 @@ class _FirstPageState extends State<FirstPage> {
 
       // pop the loading circle
       Navigator.pop(context);
+
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => MonitoringPage()));
     } on FirebaseAuthException catch (e) {
-      // pop the loading circle
-      Navigator.pop(context);
-
       // WRONG EMAIL
       if (e.code == 'user-not-found' || e.code == 'invalid-email') {
         // show error to user
@@ -94,6 +93,48 @@ class _FirstPageState extends State<FirstPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    AwesomeNotifications().isNotificationAllowed().then(
+      (isAllowed) {
+        if (!isAllowed) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Allow Notifications'),
+              content: Text('Our app would like to send you notifications'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    'Don\'t Allow',
+                    style: TextStyle(color: Colors.grey, fontSize: 18),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => AwesomeNotifications()
+                      .requestPermissionToSendNotifications()
+                      .then((_) => Navigator.pop(context)),
+                  child: Text(
+                    'Allow',
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -103,17 +144,6 @@ class _FirstPageState extends State<FirstPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                // Text(
-                //   'Predictive Maintenance Application',
-                //   style: TextStyle(
-                //       color: Colors.grey[700],
-                //       fontSize: 20,
-                //       fontWeight: FontWeight.bold),
-                // ),
-                //logo
-                // const SizedBox(
-                //   height: 100,
-                // ),
                 const Image(
                   image: AssetImage('images/engine.png'),
                   width: 100,

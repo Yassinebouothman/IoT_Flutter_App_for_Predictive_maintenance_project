@@ -32,15 +32,21 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<void> _loadLastFiveSensorData() async {
-    final lastFiveSensorData = await _databaseHelper.getLastFiveSensorData();
+    try {
+      final lastFiveSensorData = await _databaseHelper.getLastFiveSensorData();
 
-    setState(() {
-      temperatureList =
-          lastFiveSensorData.map((data) => data.temperature).toList();
-      currentList = lastFiveSensorData.map((data) => data.current).toList();
-      vibrationList = lastFiveSensorData.map((data) => data.vibration).toList();
-      timestampList = lastFiveSensorData.map((data) => data.timestamp).toList();
-    });
+      setState(() {
+        temperatureList =
+            lastFiveSensorData.map((data) => data.temperature).toList();
+        currentList = lastFiveSensorData.map((data) => data.current).toList();
+        vibrationList =
+            lastFiveSensorData.map((data) => data.vibration).toList();
+        timestampList =
+            lastFiveSensorData.map((data) => data.timestamp).toList();
+      });
+    } catch (e) {
+      print('errorrrr');
+    }
   }
 
   @override
@@ -143,7 +149,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     },
                   ),
                   ListTile(
-                    title: Text('About Us'),
+                    title: Text('À Propos'),
                     leading: Icon(Icons.groups),
                     onTap: () {
                       Navigator.push(
@@ -166,49 +172,68 @@ class _HistoryPageState extends State<HistoryPage> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SfCartesianChart(
-              title: ChartTitle(text: 'Température'),
-              primaryXAxis:
-                  DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
-              series: <LineSeries<double, DateTime>>[
-                LineSeries<double, DateTime>(
-                    dataSource: temperatureList,
-                    xValueMapper: (double data, int index) =>
-                        timestampList[index],
-                    yValueMapper: (double data, _) => data,
-                    color: Colors.red),
-              ],
-            ),
-            SfCartesianChart(
-              title: ChartTitle(text: 'Courant'),
-              primaryXAxis:
-                  DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
-              series: <LineSeries<double, DateTime>>[
-                LineSeries<double, DateTime>(
-                    dataSource: currentList,
-                    xValueMapper: (double data, int index) =>
-                        timestampList[index],
-                    yValueMapper: (double data, _) => data,
-                    color: Colors.orange),
-              ],
-            ),
-            SfCartesianChart(
-              title: ChartTitle(text: 'Vibration'),
-              primaryXAxis:
-                  DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
-              series: <LineSeries<double, DateTime>>[
-                LineSeries<double, DateTime>(
-                    dataSource: vibrationList,
-                    xValueMapper: (double data, int index) =>
-                        timestampList[index],
-                    yValueMapper: (double data, _) => data,
-                    color: Colors.green),
-              ],
-            ),
-          ],
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/background7.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 10,
+              ),
+              ElevatedButton.icon(
+                  onPressed: _loadLastFiveSensorData,
+                  icon: Icon(Icons.refresh),
+                  label: Text('Actualiser'),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromARGB(255, 255, 166, 0))),
+              SfCartesianChart(
+                title: ChartTitle(text: 'Température'),
+                primaryXAxis:
+                    DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
+                series: <LineSeries<double, DateTime>>[
+                  LineSeries<double, DateTime>(
+                      dataSource: temperatureList,
+                      xValueMapper: (double data, int index) =>
+                          timestampList[index],
+                      yValueMapper: (double data, _) => data,
+                      color: Colors.red),
+                ],
+              ),
+              SfCartesianChart(
+                title: ChartTitle(text: 'Courant'),
+                primaryXAxis:
+                    DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
+                series: <LineSeries<double, DateTime>>[
+                  LineSeries<double, DateTime>(
+                      dataSource: currentList,
+                      xValueMapper: (double data, int index) =>
+                          timestampList[index],
+                      yValueMapper: (double data, _) => data,
+                      color: Colors.orange),
+                ],
+              ),
+              SfCartesianChart(
+                title: ChartTitle(text: 'Vibration'),
+                primaryXAxis:
+                    DateTimeAxis(dateFormat: DateFormat('dd-MM-yy  HH:mm:ss')),
+                series: <LineSeries<double, DateTime>>[
+                  LineSeries<double, DateTime>(
+                      dataSource: vibrationList,
+                      xValueMapper: (double data, int index) =>
+                          timestampList[index],
+                      yValueMapper: (double data, _) => data,
+                      color: Colors.green),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -15,9 +15,10 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _notificationsEnabled = false;
+  bool _notificationsEnabled = true;
   double _sliderValue = 0;
   bool _isDarkMode = false;
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -118,7 +119,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     onTap: () {},
                   ),
                   ListTile(
-                    title: Text('About Us'),
+                    title: Text('À Propos'),
                     leading: Icon(Icons.groups),
                     onTap: () {
                       Navigator.push(
@@ -142,6 +143,14 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
       body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/background7.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
         padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

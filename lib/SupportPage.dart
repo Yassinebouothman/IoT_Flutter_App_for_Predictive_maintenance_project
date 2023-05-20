@@ -138,38 +138,48 @@ class _SupportPageState extends State<SupportPage> {
           ],
         ),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 20,
-            ),
-            Image(
-              image: AssetImage('images/engine.png'),
-              width: 70,
-              height: 70,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Notre projet de maintenance prédictive est le résultat d\'une collaboration entre une équipe d\'étudiants ingénieurs en mécatronique à l\'ULT passionnés par l\'exploitation de la puissance de la technologie pour stimuler l\'innovation et l\'efficacité dans les pratiques de maintenance industrielle. \n\nGrâce à une compréhension approfondie des défis auxquels sont confrontées les équipes de maintenance, nous avons développé un système intelligent qui combine des algorithmes d\'apprentissage automatique, des capteurs IoT et des analyses en temps réel pour prévoir les pannes d\'équipement et permettre des stratégies de maintenance proactives. \n\nNotre objectif est d\'aider les entreprises à réduire les temps d\'arrêt, à augmenter la productivité et à optimiser les coûts de maintenance, ce qui se traduit par une amélioration des performances opérationnelles et une rentabilité accrue.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, height: 1.5),
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/background7.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 20,
               ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Email: yassine.bouothman@ult-tunisie.com\n'
-              'Téléphone ou WhatsApp: +216 95 593 167\n'
-              'Addresse: Hay khadra, Tunis, Tunisie',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 16, height: 1.5, fontWeight: FontWeight.bold),
-            ),
-          ],
+              Image(
+                image: AssetImage('images/engine.png'),
+                width: 70,
+                height: 70,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Notre projet de maintenance prédictive est le résultat d\'une collaboration entre une équipe d\'étudiants ingénieurs en mécatronique à l\'ULT passionnés par l\'exploitation de la puissance de la technologie pour stimuler l\'innovation et l\'efficacité dans les pratiques de maintenance industrielle. \n\nGrâce à une compréhension approfondie des défis auxquels sont confrontées les équipes de maintenance, nous avons développé un système intelligent qui combine des algorithmes d\'apprentissage automatique, des capteurs IoT et des analyses en temps réel pour prévoir les pannes d\'équipement et permettre des stratégies de maintenance proactives. \n\nNotre objectif est d\'aider les entreprises à réduire les temps d\'arrêt, à augmenter la productivité et à optimiser les coûts de maintenance, ce qui se traduit par une amélioration des performances opérationnelles et une rentabilité accrue.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, height: 1.5),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Email: yassine.bouothman@ult-tunisie.com\n'
+                'Téléphone ou WhatsApp: +216 95 593 167\n'
+                'Addresse: Cité Khadra, Tunis, Tunisie',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 16, height: 1.5, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
       ),
     );

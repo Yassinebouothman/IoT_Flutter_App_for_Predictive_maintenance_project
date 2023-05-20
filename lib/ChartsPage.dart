@@ -33,10 +33,10 @@ class ChartsPage extends StatefulWidget {
 
 class _ChartsPageState extends State<ChartsPage> {
   String apiURL =
-      'http://192.168.1.16:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
+      'http://192.168.103.195:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
   Future<String> _getNewToken() async {
     // Make a POST request to authenticate and obtain a new JWT token
-    String authURL = 'http://192.168.1.16:8080/api/auth/login';
+    String authURL = 'http://192.168.103.195:8080/api/auth/login';
     var response = await http.post(Uri.parse(authURL),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(
@@ -271,7 +271,7 @@ class _ChartsPageState extends State<ChartsPage> {
                     },
                   ),
                   ListTile(
-                    title: Text('About Us'),
+                    title: Text('À Propos'),
                     leading: Icon(Icons.groups),
                     onTap: () {
                       Navigator.push(
@@ -294,46 +294,56 @@ class _ChartsPageState extends State<ChartsPage> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SfCartesianChart(
-              title: ChartTitle(text: 'Température'),
-              primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
-              series: <LineSeries<double, DateTime>>[
-                LineSeries<double, DateTime>(
-                    dataSource: temperatureData,
-                    xValueMapper: (double data, int index) =>
-                        timestampData[index],
-                    yValueMapper: (double data, _) => data,
-                    color: Colors.red),
-              ],
-            ),
-            SfCartesianChart(
-              title: ChartTitle(text: 'Courant'),
-              primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
-              series: <LineSeries<double, DateTime>>[
-                LineSeries<double, DateTime>(
-                    dataSource: currentData,
-                    xValueMapper: (double data, int index) =>
-                        timestampData[index],
-                    yValueMapper: (double data, _) => data,
-                    color: Colors.orange),
-              ],
-            ),
-            SfCartesianChart(
-              title: ChartTitle(text: 'Vibration'),
-              primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
-              series: <LineSeries<double, DateTime>>[
-                LineSeries<double, DateTime>(
-                    dataSource: vibrationData,
-                    xValueMapper: (double data, int index) =>
-                        timestampData[index],
-                    yValueMapper: (double data, _) => data,
-                    color: Colors.green),
-              ],
-            ),
-          ],
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/background7.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              SfCartesianChart(
+                title: ChartTitle(text: 'Température'),
+                primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
+                series: <LineSeries<double, DateTime>>[
+                  LineSeries<double, DateTime>(
+                      dataSource: temperatureData,
+                      xValueMapper: (double data, int index) =>
+                          timestampData[index],
+                      yValueMapper: (double data, _) => data,
+                      color: Colors.red),
+                ],
+              ),
+              SfCartesianChart(
+                title: ChartTitle(text: 'Courant'),
+                primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
+                series: <LineSeries<double, DateTime>>[
+                  LineSeries<double, DateTime>(
+                      dataSource: currentData,
+                      xValueMapper: (double data, int index) =>
+                          timestampData[index],
+                      yValueMapper: (double data, _) => data,
+                      color: Colors.orange),
+                ],
+              ),
+              SfCartesianChart(
+                title: ChartTitle(text: 'Vibration'),
+                primaryXAxis: DateTimeAxis(dateFormat: DateFormat('HH:mm:ss')),
+                series: <LineSeries<double, DateTime>>[
+                  LineSeries<double, DateTime>(
+                      dataSource: vibrationData,
+                      xValueMapper: (double data, int index) =>
+                          timestampData[index],
+                      yValueMapper: (double data, _) => data,
+                      color: Colors.green),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

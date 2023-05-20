@@ -1,4 +1,5 @@
 import 'dart:io';
+//import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'PredictionPage.dart';
@@ -11,7 +12,7 @@ import 'HistoryPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+//import 'package:awesome_notifications/awesome_notifications.dart';
 // import 'Provider.dart';
 // import 'package:provider/provider.dart';
 
@@ -30,11 +31,11 @@ class _MonitoringPageState extends State<MonitoringPage> {
   double current = 0.0;
 
   String apiURL =
-      'http://192.168.1.16:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
+      'http://192.168.103.195:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
 
   Future<String> _getNewToken() async {
     // Make a POST request to authenticate and obtain a new JWT token
-    String authURL = 'http://192.168.1.16:8080/api/auth/login';
+    String authURL = 'http://192.168.103.195:8080/api/auth/login';
     var response = await http.post(Uri.parse(authURL),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(
@@ -75,11 +76,10 @@ class _MonitoringPageState extends State<MonitoringPage> {
         // Store the latest values
         if (mounted) {
           setState(() {
+            // Handle NaN values
             try {
               temperature = double.parse(temperatureData['value']);
-              // Handle non-NaN value
             } catch (e) {
-              // Handle NaN value
               temperature = 0.0;
             }
             try {
@@ -106,6 +106,11 @@ class _MonitoringPageState extends State<MonitoringPage> {
   @override
   void initState() {
     super.initState();
+    // AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+    //   if (!isAllowed) {
+    //     AwesomeNotifications().requestPermissionToSendNotifications();
+    //   }
+    // });
     _getSensorData(); // Call the API when the widget is first created
   }
 
@@ -113,21 +118,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final useracc = FirebaseAuth.instance.currentUser!;
-
-    //provider code
-//     final sensorDataProvider =
-//         Provider.of<SensorDataProvider>(context, listen: true);
-
-// // Access the sensor data
-//     double temperature = sensorDataProvider.temperature;
-//     double vibration = sensorDataProvider.vibration;
-//     double current = sensorDataProvider.current;
-
-// // Start fetching data
-//     sensorDataProvider.startFetchingData();
-
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Visualisation'),
         backgroundColor: Colors.orange,
@@ -222,7 +213,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                     },
                   ),
                   ListTile(
-                    title: Text('About Us'),
+                    title: Text('À Propos'),
                     leading: Icon(Icons.groups),
                     onTap: () {
                       Navigator.push(
@@ -244,157 +235,167 @@ class _MonitoringPageState extends State<MonitoringPage> {
           ],
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              children: [
-                Icon(
-                  Icons.thermostat_outlined,
-                  size: 64,
-                  color: Colors.red,
-                ),
-                // const SizedBox(
-                //   width: 16.0,
-                // ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Text(
-                        'Température',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Center(
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/background7.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  Icon(
+                    Icons.thermostat_outlined,
+                    size: 64,
+                    color: Colors.red,
+                  ),
+                  // const SizedBox(
+                  //   width: 16.0,
+                  // ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
                         child: Text(
-                          '${temperature.toStringAsFixed(2)} °C',
+                          'Température',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            //color: Colors.red),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 30,
-            ),
-            Column(
-              children: [
-                Icon(
-                  Icons.flash_on_outlined,
-                  size: 64,
-                  color: Colors.orangeAccent,
-                ),
-                SizedBox(
-                  width: 16.0,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Center(
-                      child: Text(
-                        'Courant',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Center(
+                        child: Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${temperature.toStringAsFixed(2)} °C',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              //color: Colors.red),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Center(
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              Column(
+                children: [
+                  Icon(
+                    Icons.flash_on_outlined,
+                    size: 64,
+                    color: Colors.orangeAccent,
+                  ),
+                  SizedBox(
+                    width: 16.0,
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Center(
                         child: Text(
-                          '${current.toStringAsFixed(2)} A',
+                          'Courant',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            //color: Colors.red),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 30,
-            ),
-            Column(
-              children: [
-                Icon(
-                  Icons.vibration_outlined,
-                  size: 64,
-                  color: Colors.green,
-                ),
-                SizedBox(
-                  width: 16.0,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Text(
-                        'Vibration',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Center(
+                        child: Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${current.toStringAsFixed(2)} A',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              //color: Colors.red),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Center(
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              Column(
+                children: [
+                  Icon(
+                    Icons.vibration_outlined,
+                    size: 64,
+                    color: Colors.green,
+                  ),
+                  SizedBox(
+                    width: 16.0,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
                         child: Text(
-                          '${vibration.toStringAsFixed(2)}',
+                          'Vibration',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            //color: Colors.red),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Center(
+                        child: Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${vibration.toStringAsFixed(2)} g',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              //color: Colors.red),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
