@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'MyUtils.dart';
 //import 'package:awesome_notifications/awesome_notifications.dart';
 
 class PredictionPage extends StatefulWidget {
@@ -21,45 +22,16 @@ class PredictionPage extends StatefulWidget {
 
 class _PredictionPageState extends State<PredictionPage> {
   Timer? _timer;
-  int ttf = 0;
-  String anomaly = 'N/A';
-  String apiURL =
-      'http://192.168.103.195:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Time to failure,Anomaly';
-  Future<String> _getNewToken() async {
-    // Make a POST request to authenticate and obtain a new JWT token
-    String authURL = 'http://192.168.103.195:8080/api/auth/login';
-    var response = await http.post(Uri.parse(authURL),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(
-            {"username": "tenant@thingsboard.org", "password": "tenant"}));
-    print(response.statusCode);
-    var data = json.decode(response.body);
-    return data['token'];
-  }
-
-  String? _accessToken;
-  DateTime? _tokenExpirationTime;
-
-  Future<String> _getAccessToken() async {
-    // Check if the cached token has expired
-    if (_accessToken != null &&
-        _tokenExpirationTime != null &&
-        _tokenExpirationTime!.isAfter(DateTime.now())) {
-      return _accessToken!;
-    }
-    // Request a new token if the cached token has expired or doesn't exist
-    _accessToken = await _getNewToken();
-    _tokenExpirationTime = DateTime.now().add(Duration(minutes: 30));
-    return _accessToken!;
-  }
+  String ttf = "N/A";
+  String anomaly = "N/A";
 
   Future<void> _getSensorData() async {
     // Parse the response JSON to extract the sensor values
-    _timer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
+    _timer = Timer.periodic(Duration(seconds: 2), (Timer t) async {
       try {
-        String JWT = await _getAccessToken();
-        var response = await http
-            .get(Uri.parse(apiURL), headers: {'Authorization': 'Bearer $JWT'});
+        String JWT = await MyUtils().getAccessToken();
+        var response = await http.get(Uri.parse(MyUtils().apiURL),
+            headers: {'Authorization': 'Bearer $JWT'});
         var data = json.decode(response.body);
         var ttfData = data['Time to failure'][0];
         var anomalyData = data['Anomaly'][0];
@@ -68,9 +40,9 @@ class _PredictionPageState extends State<PredictionPage> {
           setState(() {
             // Handle NaN values
             try {
-              ttf = int.parse(ttfData['value']);
+              ttf = ttfData['value'];
             } catch (e) {
-              ttf = 0;
+              ttf = "N/A";
             }
             try {
               anomaly = anomalyData['value'];
@@ -87,6 +59,8 @@ class _PredictionPageState extends State<PredictionPage> {
       }
     });
   }
+
+// notifications code
 
 /*
   int createUniqueId() {
@@ -108,6 +82,7 @@ class _PredictionPageState extends State<PredictionPage> {
     }
   }
 */
+
   @override
   void initState() {
     super.initState();
@@ -276,7 +251,7 @@ class _PredictionPageState extends State<PredictionPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${ttf.toString()} Hours',
+                            ttf + " Hours",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

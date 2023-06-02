@@ -1,0 +1,42 @@
+import paho.mqtt.publish as publish
+#import psutil
+import string
+import random
+import time
+
+# The ThingSpeak Channel ID.
+# Replace <YOUR-CHANNEL-ID> with your channel ID.
+channel_ID = "2165317"
+
+# The hostname of the ThingSpeak MQTT broker.
+mqtt_host = "mqtt3.thingspeak.com"
+
+# Your MQTT credentials for the device
+mqtt_client_ID = "ITIVMzc4ITYfKRgvATUBCwo"
+mqtt_username = "ITIVMzc4ITYfKRgvATUBCwo"
+mqtt_password = "Zrpg4mClLG2ysF2LCYdCMMt1"
+
+# Set the port to 1883
+t_port = 1883
+
+# Create the topic string.
+topic = "channels/" + channel_ID + "/publish"
+
+while (True):
+    # get the system performance data over 20 seconds.
+    Temperature = float(random.randrange(18,30))
+    Current = float(random.randrange(0,5))
+    Vibration = float(random.randrange(0,2))
+    sound = float(random.randrange(0,100))
+    # build the payload string.
+    payload = "field1=" + str(Temperature) + "&field2=" + str(Current) + "&field3=" + str (Vibration) + "&field4=" + str (sound)
+
+    # attempt to publish this data to the topic.
+    try:
+        print("Writing Payload = ", payload, " to host: ", mqtt_host, " clientID= ", mqtt_client_ID, " User ", mqtt_username, " PWD ", mqtt_password)
+        publish.single(topic, payload, hostname=mqtt_host, port=t_port, client_id=mqtt_client_ID, auth={'username': mqtt_username, 'password': mqtt_password})
+    except (KeyboardInterrupt):
+        break
+    except Exception as e:
+        print(e)
+    time.sleep(2)

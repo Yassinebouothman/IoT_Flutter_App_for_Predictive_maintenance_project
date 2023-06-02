@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:predictive_maintenance_app/MonitoringPage.dart';
 import 'package:predictive_maintenance_app/components/my_button.dart';
 import 'package:predictive_maintenance_app/components/my_textfield.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+//import 'package:awesome_notifications/awesome_notifications.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -95,6 +95,7 @@ class _FirstPageState extends State<FirstPage> {
   @override
   void initState() {
     super.initState();
+    /*
     AwesomeNotifications().isNotificationAllowed().then(
       (isAllowed) {
         if (!isAllowed) {
@@ -131,7 +132,7 @@ class _FirstPageState extends State<FirstPage> {
           );
         }
       },
-    );
+    );*/
   }
 
   @override

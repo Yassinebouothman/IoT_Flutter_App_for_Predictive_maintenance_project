@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:predictive_maintenance_app/check_login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+//import 'package:awesome_notifications/awesome_notifications.dart';
 //import 'firebase_options.dart';
 import 'Provider.dart';
 
@@ -10,6 +10,7 @@ import 'Provider.dart';
 // import 'Provider.dart';
 
 void main() async {
+  /*
   AwesomeNotifications().initialize(
     'resource://drawable/res_motor',
     //null,
@@ -24,7 +25,7 @@ void main() async {
       ),
     ],
     debug: true,
-  );
+  );*/
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: FirebaseOptions(

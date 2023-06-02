@@ -12,7 +12,8 @@ import 'HistoryPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:awesome_notifications/awesome_notifications.dart';
+import 'MyUtils.dart';
+// import 'package:awesome_notifications/awesome_notifications.dart';
 // import 'Provider.dart';
 // import 'package:provider/provider.dart';
 
@@ -26,48 +27,17 @@ class MonitoringPage extends StatefulWidget {
 class _MonitoringPageState extends State<MonitoringPage> {
   Timer? _timer;
 
-  double temperature = 0.0;
-  double vibration = 0.0;
-  double current = 0.0;
-
-  String apiURL =
-      'http://192.168.103.195:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
-
-  Future<String> _getNewToken() async {
-    // Make a POST request to authenticate and obtain a new JWT token
-    String authURL = 'http://192.168.103.195:8080/api/auth/login';
-    var response = await http.post(Uri.parse(authURL),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(
-            {"username": "tenant@thingsboard.org", "password": "tenant"}));
-    print(response.statusCode);
-    var data = json.decode(response.body);
-    return data['token'];
-  }
-
-  String? _accessToken;
-  DateTime? _tokenExpirationTime;
-
-  Future<String> _getAccessToken() async {
-    // Check if the cached token has expired
-    if (_accessToken != null &&
-        _tokenExpirationTime != null &&
-        _tokenExpirationTime!.isAfter(DateTime.now())) {
-      return _accessToken!;
-    }
-    // Request a new token if the cached token has expired or doesn't exist
-    _accessToken = await _getNewToken();
-    _tokenExpirationTime = DateTime.now().add(Duration(minutes: 30));
-    return _accessToken!;
-  }
+  String temperature = "N/A";
+  String vibration = "N/A";
+  String current = "N/A";
 
   Future<void> _getSensorData() async {
     // Parse the response JSON to extract the sensor values
-    _timer = Timer.periodic(Duration(seconds: 5), (Timer t) async {
+    _timer = Timer.periodic(Duration(seconds: 2), (Timer t) async {
       try {
-        String JWT = await _getAccessToken();
-        var response = await http
-            .get(Uri.parse(apiURL), headers: {'Authorization': 'Bearer $JWT'});
+        String JWT = await MyUtils().getAccessToken();
+        var response = await http.get(Uri.parse(MyUtils().apiURL),
+            headers: {'Authorization': 'Bearer $JWT'});
         var data = json.decode(response.body);
         var temperatureData = data['Temperature'][0];
         var vibrationData = data['Vibration'][0];
@@ -78,19 +48,19 @@ class _MonitoringPageState extends State<MonitoringPage> {
           setState(() {
             // Handle NaN values
             try {
-              temperature = double.parse(temperatureData['value']);
+              temperature = temperatureData['value'];
             } catch (e) {
-              temperature = 0.0;
+              temperature = "N/A";
             }
             try {
-              vibration = double.parse(vibrationData['value']);
+              vibration = vibrationData['value'];
             } catch (e) {
-              vibration = 0.0;
+              vibration = "N/A";
             }
             try {
-              current = double.parse(currentData['value']);
+              current = currentData['value'];
             } catch (e) {
-              current = 0.0;
+              current = "N/A";
             }
           });
         }
@@ -106,11 +76,6 @@ class _MonitoringPageState extends State<MonitoringPage> {
   @override
   void initState() {
     super.initState();
-    // AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
-    //   if (!isAllowed) {
-    //     AwesomeNotifications().requestPermissionToSendNotifications();
-    //   }
-    // });
     _getSensorData(); // Call the API when the widget is first created
   }
 
@@ -282,7 +247,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${temperature.toStringAsFixed(2)} °C',
+                            temperature + " °C",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -332,7 +297,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${current.toStringAsFixed(2)} A',
+                            current + " A",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -381,7 +346,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${vibration.toStringAsFixed(2)} g',
+                            vibration + " g",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

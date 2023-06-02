@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 import 'HistoryPage.dart';
 import 'package:provider/provider.dart';
 import 'Provider.dart';
+import 'MyUtils.dart';
 //import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 
 // import 'Provider.dart';
@@ -32,48 +33,19 @@ class ChartsPage extends StatefulWidget {
 }
 
 class _ChartsPageState extends State<ChartsPage> {
-  String apiURL =
-      'http://192.168.103.195:8080/api/plugins/telemetry/DEVICE/dd79abf0-ce44-11ed-ae1a-a121083348b4/values/timeseries?keys=Temperature,Vibration,Current';
-  Future<String> _getNewToken() async {
-    // Make a POST request to authenticate and obtain a new JWT token
-    String authURL = 'http://192.168.103.195:8080/api/auth/login';
-    var response = await http.post(Uri.parse(authURL),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(
-            {"username": "tenant@thingsboard.org", "password": "tenant"}));
-    print(response.statusCode);
-    var data = json.decode(response.body);
-    return data['token'];
-  }
-
-  String? _accessToken;
-  DateTime? _tokenExpirationTime;
-
-  Future<String> _getAccessToken() async {
-    // Check if the cached token has expired
-    if (_accessToken != null &&
-        _tokenExpirationTime != null &&
-        _tokenExpirationTime!.isAfter(DateTime.now())) {
-      return _accessToken!;
-    }
-    // Request a new token if the cached token has expired or doesn't exist
-    _accessToken = await _getNewToken();
-    _tokenExpirationTime = DateTime.now().add(Duration(minutes: 30));
-    return _accessToken!;
-  }
-
   List<double> temperatureData = [];
   List<double> currentData = [];
   List<double> vibrationData = [];
   List<DateTime> timestampData = [];
   int maxDataLength = 50;
+  Timer? _timer;
 
   Future<void> _getSensorlistData() async {
-    Timer.periodic(Duration(seconds: 5), (Timer t) async {
+    Timer.periodic(Duration(seconds: 2), (Timer t) async {
       try {
-        String JWT = await _getAccessToken();
-        var response = await http
-            .get(Uri.parse(apiURL), headers: {'Authorization': 'Bearer $JWT'});
+        String JWT = await MyUtils().getAccessToken();
+        var response = await http.get(Uri.parse(MyUtils().apiURL),
+            headers: {'Authorization': 'Bearer $JWT'});
         var data = json.decode(response.body);
         print(data['Temperature'][0]['ts']);
         var temperatureValue = data['Temperature'][0];
@@ -127,10 +99,12 @@ class _ChartsPageState extends State<ChartsPage> {
         }
         // Call the method that updates the historical data lists
       } on TimeoutException catch (_) {
+        _timer?.cancel();
         print('Timout error');
 
         // Call the method that updates the historical data lists
       } on SocketException {
+        _timer?.cancel();
         print('Socket error');
       }
     });

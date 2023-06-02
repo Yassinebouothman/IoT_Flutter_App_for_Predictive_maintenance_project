@@ -7,9 +7,7 @@ import 'models/sensordata.dart';
 class DatabaseHelper {
   static final _databaseName = 'sensorData.db';
   static final _databaseVersion = 1;
-
   static final table = 'sensorData';
-
   static final columnId = '_id';
   static final columnTemperature = 'temperature';
   static final columnCurrent = 'current';
